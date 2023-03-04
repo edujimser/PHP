@@ -1,0 +1,57 @@
+HTML VIEW -----------------------------------------------------------------------------------------
+
+    <div class="paginacion">
+                <?php if($pagina_actual < $num_paginas): ?>
+                    <a href="index.php?p=<?php echo $pagina_actual + 1 ?>" class="derecha">Pagina Siguiente <i class="fa fa-long-arrow-right"></i></a>
+                <?php endif; ?>
+                <?php if($pagina_actual > 1 && $pagina_actual <= $num_paginas): ?>
+                    <a href="index.php?p=<?php echo $pagina_actual - 1 ?>" class="izquierda"><i class="fa fa-long-arrow-left"></i> Pagina Anterior</a>
+                <?php endif; ?> 
+            </div>
+  </div>
+
+
+PHP -----------------------------------------------------------------------------------------
+
+//PAGINACION
+$usuarios_por_pagina = 2;
+$pagina_actual = (isset($_GET['p'])) ? (int)$_GET['p'] : 1;
+$inicio = ($pagina_actual > 1) ? (($pagina_actual * $usuarios_por_pagina + 1)- $usuarios_por_pagina) : 1;
+
+    //OBTENER NUMERO DE PAGINAS TOTALES
+    $num_paginas = obtenerDatosUsuario($inicio, $inicio + $usuarios_por_pagina);
+
+
+CURL -----------------------------------------------------------------------------------------
+
+<?php
+// OBTENER DATOS USUARIO
+function obtenerDatosUsuario($usuarioRangoA, $usuarioRangoB){
+
+    $datos = [
+        "usuarioRangoA"=>$usuarioRangoA,
+        "usuarioRangoB"=>$usuarioRangoB,  
+    ];
+
+    $json = json_encode($datos);
+
+    $endpoint = "http://" . $_SERVER['HTTP_HOST'] . "/DAW/api/api-datos/index.api.php";
+
+    $curl = curl_init();
+
+    curl_setopt($curl, CURLOPT_URL, $endpoint);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1 );
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($curl, CURLOPT_POST, 1);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $json);
+
+    $output = curl_exec($curl);
+
+    curl_close($curl);
+
+   $usuario = json_decode($output,true);
+
+   return $usuario;
+};
+?>
