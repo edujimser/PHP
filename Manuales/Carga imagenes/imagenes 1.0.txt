@@ -1,0 +1,84 @@
+HTML VIEW -----------------------------------------------------------------------------------------
+
+
+<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" class="formulario" enctype="multipart/form-data">
+                
+		 <label for="foto">Selecciona tu foto</label>
+             <input type="file" name="foto" id="foto"
+             <input type="submit" value="fotografia" name="submit">
+</form>
+
+- htmlspecialchars($_SERVER['PHP_SELF']); -> Reenviar a la página solicitada el archivo como $_FILE[][]
+- Enctype -> atributo especifica cómo se deben codificar los datos del formulario al enviarlos al servidor
+	- multipart/form-data -> El tipo que permite que <input> los elementos del archivo carguen datos del archivo.
+
+
+PHP -----------------------------------------------------------------------------------------
+
+<?php
+
+
+// CONEXIÓN DIRECTA A LA BASE DE DATOS 
+
+$conexion = conectarBD('127.0.0.1','practica_galeria','root','');
+if(!$conexion){
+    die();
+};
+
+
+// RESPUESTA DEL POST 
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_FILES) ) {
+     $check  = @getimagesize($_FILES['foto']['tmp_name']); // VALIDACIÓN DE CONTENIDO
+     
+     if ($check !== false) { // VERIFICACIÓN DE CONTENIDO
+        $ruta = './fotos/' . $_FILES['foto']['name']; //RUTA ALMACENAMIENTO
+        $verificacionArchivo = move_uploaded_file($_FILES['foto']['tmp_name'], $ruta); //MOVER ARCHIVO
+
+        $statement = $conexion->prepare('INSERT INTO fotos(titulo, imagen, texto) VALUES (:titulo, :imagen, :texto)'); //ALMACENAMIENTO RUTA
+        $verificacionBD = $statement->execute(array(
+            ':titulo' => $_POST['titulo'],
+            ':imagen' => $_FILES['foto']['name'],
+            ':texto'  => $_POST['texto']
+        ));
+     };
+
+     //VERIFICACION CARGA DE ARCHIVO
+    if ($verificacionBD && $verificacionArchivo) {
+        $mensaje='Archivo Subido';
+        header('location: index.php');
+    }else{
+        $mensaje='Error en la subida';
+    };
+};
+require './views/subir.view.php';
+
+?>
+
+viewMenuUsuarioImagen
+
+
+
+
+DATOS ARRAY $_FILE -----------------------------------------------------------------------------------------
+Array
+(
+    [foto] => Array
+        (
+            [name] => user.jpg
+            [full_path] => user.jpg
+            [type] => image/jpeg
+            [tmp_name] => C:\xampp\tmp\php1554.tmp
+            [error] => 0
+            [size] => 13446
+        )
+
+)
+Array
+(
+    [0] => 512
+    [1] => 512
+    [2] => 3
+    [3] => width="512" height="512"
+    [bits] => 8
+    [mime] => image/png
+)
